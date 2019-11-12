@@ -1,0 +1,9 @@
+tmp
+.project
+.DS_Store
+*.csv
+*.heapsnapshot
+.vscode
+.idea
+.log
+*.pem
