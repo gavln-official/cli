@@ -2,11 +2,13 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 
 	"strings"
 
+	"github.com/Gvinaxu/cli/handler"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -33,6 +35,10 @@ ______________________________
 `
 )
 
+var (
+	h *handler.Handler
+)
+
 func main() {
 	checkUser()
 	fmt.Printf(Banner, Version, Website)
@@ -44,12 +50,40 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(line)
+		command, args, err := getCommandAndArgs(line)
+		if err != nil {
+			continue
+		}
+		if command == "quit" {
+			fmt.Println("bye!")
+			break
+		}
+		h.InvokeCmd(command, args)
 	}
 }
 
+func init() {
+	f := &handler.FileReq{}
+	h = handler.NewHandler(f)
+}
+
 func getCommandAndArgs(line string) (command string, args []string, err error) {
-	return "", nil, nil
+	line = strings.TrimSpace(line)
+	all := strings.Split(line, " ")
+	if len(all) == 0 {
+		return "", nil, errors.New("input is nil")
+	}
+	args = make([]string, 0)
+	for i, v := range all {
+		if i == 0 {
+			continue
+		}
+		if v == "" {
+			continue
+		}
+		args = append(args, v)
+	}
+	return all[0], args, nil
 }
 
 func checkUser() {
@@ -67,7 +101,7 @@ func checkUser() {
 	}
 	password := string(bytes)
 	name = strings.ReplaceAll(name, "\n", "")
-	account := NewAccount(name, password)
+	account := handler.NewAccount(name, password)
 	_, err = account.Login()
 	if err != nil {
 		panic(err)

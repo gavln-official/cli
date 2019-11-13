@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Gvinaxu/cli/util"
 	"github.com/valyala/fasthttp"
 )
 
@@ -23,7 +24,6 @@ type Account struct {
 }
 
 func NewAccount(name, password string) *Account {
-
 	return &Account{name: name, password: password}
 }
 
@@ -32,7 +32,7 @@ func (a *Account) Login() (*AccessToken, error) {
 	args.Add("name", a.name)
 	args.Add("pass", a.password)
 
-	status, resp, err := fasthttp.Post(nil, loginUrl, args)
+	status, resp, err := util.DoTimeout(args, "POST", loginUrl, nil)
 	if status != http.StatusOK {
 		return nil, errors.New(fmt.Sprintf("response code is %d", status))
 	}
